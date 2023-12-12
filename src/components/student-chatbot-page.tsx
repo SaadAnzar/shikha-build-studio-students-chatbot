@@ -522,8 +522,8 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
           </Card>
         </div>
         <div className="w-[30%]">
-          <Card className="shadow-md rounded-xl p-2 mb-2 mx-1 flex justify-between items-center flex-col font-medium">
-            <h1 className="font-semibold text-lg">
+          <Card className="mx-1 mb-2 flex flex-col items-center justify-between rounded-xl p-2 font-medium shadow-md">
+            <h1 className="text-lg font-semibold">
               {studentName ? studentName : "Shikha AI Chatbot"}
             </h1>
           </Card>
@@ -550,7 +550,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
                   "Rate"
                 )}
               </Button>
-              <Card className="mt-4 h-[280px] rounded-xl px-3 py-2 shadow overflow-y-auto text-sm">
+              <Card className="mt-4 h-[280px] overflow-y-auto rounded-xl px-3 py-2 text-sm shadow">
                 {convoRating}
               </Card>
             </CardContent>

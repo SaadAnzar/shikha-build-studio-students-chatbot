@@ -59,7 +59,7 @@ const StudentInfoModal = ({
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Let's Learn</AlertDialogTitle>
+          <AlertDialogTitle>Let&apos;s Learn</AlertDialogTitle>
           <AlertDialogDescription>
             Please fill the student info to be able to converse with the
             chatbot.
