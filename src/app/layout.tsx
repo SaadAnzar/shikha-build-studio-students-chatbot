@@ -7,10 +7,10 @@ import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
   title: {
-    default: "Shikha Build Studio Student Chatbot",
-    template: `%s - Shikha Build Studio Student Chatbot`,
+    default: "Shikha Labs Student",
+    template: `%s - Shikha Labs Student`,
   },
-  description: "Shikha Build Studio Student Chatbot",
+  description: "Shikha Labs Student",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon-16x16.png",

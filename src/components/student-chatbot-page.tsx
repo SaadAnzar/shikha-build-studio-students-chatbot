@@ -64,7 +64,6 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
     imageURL,
     chatbotName,
     welcomeMessage,
-    description,
     namespace,
     indexName,
     prompt,
@@ -287,10 +286,6 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
   }
 
   const rateConversation = async () => {
-    // const conversationString = chats.map((chat) => `${chat.message}`).join("\n")
-
-    // console.log(conversationString)
-
     setConvoRating("")
     setRatingLoading(true)
 
@@ -507,14 +502,10 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
                         color="#fff"
                         ms-visible={true}
                       />
-                      <span className="font-cal text-base tracking-normal">
-                        Loading
-                      </span>
+                      <span className="text-base tracking-normal">Loading</span>
                     </div>
                   ) : (
-                    <span className="font-cal text-lg tracking-normal">
-                      Send
-                    </span>
+                    <span className="text-lg tracking-normal">Send</span>
                   )}
                 </Button>
               </form>
@@ -557,12 +548,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
             <CardFooter>
               <Button
                 onClick={saveConversation}
-                disabled={
-                  saveLoading ||
-                  !convoRating ||
-                  ratingLoading ||
-                  chats.length < 5
-                }
+                disabled={saveLoading || ratingLoading || chats.length < 5}
                 className="w-full"
               >
                 {saveLoading && (
