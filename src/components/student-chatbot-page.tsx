@@ -3,7 +3,13 @@
 import React, { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { addDoc, collection, doc, getDoc } from "firebase/firestore"
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  serverTimestamp,
+} from "firebase/firestore"
 import { Loader2 } from "lucide-react"
 import { Grid } from "react-loader-spinner"
 import { toast } from "sonner"
@@ -337,6 +343,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
           convoRating,
           chatbotDetails,
           chats,
+          createdAt: serverTimestamp(),
         })
         setSaveLoading(false)
         toast.success("Your conversation has been saved.")
