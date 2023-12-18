@@ -43,7 +43,7 @@ interface ChatbotProps {
 }
 
 interface Chat {
-  role: string
+  role: "user" | "assistant"
   content: string
 }
 
@@ -136,7 +136,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
   ) => {
     event.preventDefault()
 
-    const currentChat = {
+    const currentChat: Chat = {
       role: "user",
       content: input,
     }
@@ -160,7 +160,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
       ]
     }
 
-    console.log("conversationHistory", conversationHistory)
+    // console.log("conversationHistory", conversationHistory)
 
     setChats([...chats, { role: "user", content: input }])
     setIsLoading(true)
