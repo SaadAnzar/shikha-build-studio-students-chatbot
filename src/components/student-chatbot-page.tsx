@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { addDoc, collection, doc, getDoc } from "firebase/firestore"
-import { Loader2, LogOut } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { Grid } from "react-loader-spinner"
 import { toast } from "sonner"
 
@@ -37,8 +37,8 @@ interface ChatbotProps {
 }
 
 interface Chat {
-  message: string
-  author: string
+  role: string
+  content: string
 }
 
 interface StudentChatbotPageProps {
@@ -73,7 +73,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
 
   const [input, setInput] = useState<string>("")
   const [chats, setChats] = useState<Chat[]>([
-    { message: welcomeMessage, author: "bot" },
+    { role: "assistant", content: welcomeMessage },
   ])
   const [questions, setQuestions] = useState<string>("")
   const [answer, setAnswer] = useState<string>("")
@@ -122,7 +122,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
   }, [chats])
 
   useEffect(() => {
-    setChats([{ message: welcomeMessage, author: "bot" }])
+    setChats([{ role: "assistant", content: welcomeMessage }])
   }, [welcomeMessage])
 
   const handlePromptSubmit = async (
@@ -131,8 +131,8 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
     event.preventDefault()
 
     const currentChat = {
-      message: input,
-      author: "user",
+      role: "user",
+      content: input,
     }
 
     let conversationHistory: Chat[] = []
@@ -154,13 +154,9 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
       ]
     }
 
-    const conversationString = conversationHistory
-      .map((chat) => `${chat.message}`)
-      .join("\n\n")
+    console.log("conversationHistory", conversationHistory)
 
-    console.log(conversationString)
-
-    setChats([...chats, { message: input, author: "user" }])
+    setChats([...chats, { role: "user", content: input }])
     setIsLoading(true)
 
     const response = await fetch("/api/conversation", {
@@ -168,7 +164,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ prompt, input: conversationString }),
+      body: JSON.stringify({ prompt, input: conversationHistory }),
     })
 
     const data = response.body
@@ -180,11 +176,11 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
     if (!response.ok) {
       setChats([
         ...chats,
-        { message: input, author: "user" },
+        { role: "user", content: input },
         {
-          message:
+          role: "assistant",
+          content:
             "Sorry, We ran into an error. Please refresh the page and try again.",
-          author: "bot",
         },
       ])
       setInput("")
@@ -205,12 +201,12 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
       setChats([
         ...chats,
         {
-          message: input,
-          author: "user",
+          role: "user",
+          content: input,
         },
         {
-          message: output as string,
-          author: "bot",
+          role: "assistant",
+          content: output as string,
         },
       ])
     }
@@ -236,7 +232,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
 
     const response = handleQuestions()
     setQuestions(response)
-    setChats([...chats, { message: input, author: "user" }])
+    setChats([...chats, { role: "user", content: input }])
     setIsLoading(true)
 
     const res = await fetch(
@@ -251,12 +247,12 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
     setChats([
       ...chats,
       {
-        message: input,
-        author: "user",
+        role: "user",
+        content: input,
       },
       {
-        message: Answer,
-        author: "bot",
+        role: "assistant",
+        content: Answer,
       },
     ])
     setInput("")
@@ -273,11 +269,11 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
     if (!res.ok) {
       setChats([
         ...chats,
-        { message: input, author: "user" },
+        { role: "user", content: input },
         {
-          message:
+          role: "assistant",
+          content:
             "Sorry, Your document is not in the index. Please upload a new document.",
-          author: "bot",
         },
       ])
       setInput("")
@@ -286,64 +282,72 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
   }
 
   const rateConversation = async () => {
-    setConvoRating("")
-    setRatingLoading(true)
+    if (chats.length < 5) {
+      toast.error("The length of the chats should be minimum 5.")
+    } else {
+      setConvoRating("")
+      setRatingLoading(true)
 
-    const response = await fetch("/api/convo-rate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ conversation: chats }),
-    })
+      const response = await fetch("/api/convo-rate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ conversation: chats }),
+      })
 
-    const data = response.body
-    if (!data) {
-      console.log("No data")
-      return
-    }
+      const data = response.body
+      if (!data) {
+        console.log("No data")
+        return
+      }
 
-    if (!response.ok) {
-      toast.error("Sorry, We ran into an error. Please try again.")
+      if (!response.ok) {
+        toast.error("Sorry, We ran into an error. Please try again.")
+        setRatingLoading(false)
+      }
+
+      const reader = data.getReader()
+      const decoder = new TextDecoder()
+      let done = false
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read()
+        done = doneReading
+        const chunkValue = decoder.decode(value)
+
+        setConvoRating((prev) => prev + chunkValue)
+      }
+
       setRatingLoading(false)
     }
-
-    const reader = data.getReader()
-    const decoder = new TextDecoder()
-    let done = false
-
-    while (!done) {
-      const { value, done: doneReading } = await reader.read()
-      done = doneReading
-      const chunkValue = decoder.decode(value)
-
-      setConvoRating((prev) => prev + chunkValue)
-    }
-
-    setRatingLoading(false)
   }
 
   const saveConversation = async () => {
-    try {
-      setSaveLoading(true)
+    if (chats.length < 5) {
+      toast.error("The length of the chats should be minimum 5.")
+    } else {
+      try {
+        setSaveLoading(true)
 
-      await addDoc(collection(db, "responses"), {
-        studentName,
-        studentRollno,
-        studentGrade,
-        convoRating,
-        chatbotDetails,
-        chats,
-      })
-      setSaveLoading(false)
-      toast.success("Your conversation has been saved.")
-      setChats([{ message: welcomeMessage, author: "bot" }])
-      setConvoRating("")
-    } catch (error) {
-      console.log(error)
-      setSaveLoading(false)
+        await addDoc(collection(db, "responses"), {
+          studentName,
+          studentRollno,
+          studentGrade,
+          convoRating,
+          chatbotDetails,
+          chats,
+        })
+        setSaveLoading(false)
+        toast.success("Your conversation has been saved.")
+        setChats([{ role: "assistant", content: welcomeMessage }])
+        setConvoRating("")
+      } catch (error) {
+        console.log(error)
+        setSaveLoading(false)
 
-      toast.error("Something went wrong!")
+        toast.error("Something went wrong!")
+      }
     }
   }
 
@@ -397,7 +401,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
                     key={index}
                     className="my-4 flex flex-1 gap-3 text-sm text-gray-600"
                   >
-                    {chat.author === "user" && (
+                    {chat.role === "user" && (
                       <Avatar>
                         <div className="bg-primary flex h-full w-full items-center justify-center rounded-full border opacity-100">
                           <svg
@@ -414,7 +418,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
                         </div>
                       </Avatar>
                     )}
-                    {chat.author === "bot" && !imageURL && (
+                    {chat.role === "assistant" && !imageURL && (
                       <Avatar>
                         <div
                           className={cn(
@@ -437,7 +441,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
                         </div>
                       </Avatar>
                     )}
-                    {chat.author === "bot" && imageURL && (
+                    {chat.role === "assistant" && imageURL && (
                       <Avatar className="h-10 w-10">
                         <div className="flex h-full w-full items-center justify-center rounded-full border">
                           <Image
@@ -453,10 +457,10 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
 
                     <div className="leading-relaxed">
                       <span className="font-cal block text-base tracking-normal text-black">
-                        {chat.author === "user" ? "You" : chatbotName}
+                        {chat.role === "user" ? "You" : chatbotName}
                       </span>
                       <div className="text-primary mt-1 rounded-lg bg-zinc-200 px-4 py-1.5 font-medium">
-                        {chat.message}
+                        {chat.content}
                       </div>
                     </div>
                   </div>
@@ -528,19 +532,22 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button
-                onClick={rateConversation}
-                disabled={chats.length < 5 || ratingLoading || saveLoading}
-              >
-                {ratingLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Rating
-                  </>
-                ) : (
-                  "Rate"
-                )}
-              </Button>
+              <div className="flex justify-end">
+                <Button
+                  onClick={rateConversation}
+                  disabled={ratingLoading || saveLoading}
+                >
+                  {ratingLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Evaluating
+                    </>
+                  ) : (
+                    "Evaluate"
+                  )}
+                </Button>
+              </div>
+
               <Card className="mt-4 h-[280px] overflow-y-auto rounded-xl px-3 py-2 text-sm shadow">
                 {convoRating}
               </Card>
@@ -548,7 +555,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
             <CardFooter>
               <Button
                 onClick={saveConversation}
-                disabled={saveLoading || ratingLoading || chats.length < 5}
+                disabled={saveLoading || ratingLoading}
                 className="w-full"
               >
                 {saveLoading && (

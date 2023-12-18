@@ -5,8 +5,6 @@ export const runtime = "edge"
 export async function POST(req: Request): Promise<Response> {
   const { conversation } = await req.json()
 
-  console.log("Conversation: ", conversation)
-
   if (!conversation) {
     return new Response("No conversation was sent in the request!", {
       status: 400,
