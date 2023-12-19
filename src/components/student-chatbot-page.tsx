@@ -27,9 +27,9 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import MarkdownComponent from "@/components/MarkdownComponent"
 import Loader from "@/components/loader"
-
-import StudentInfoModal from "./student-info-modal"
+import StudentInfoModal from "@/components/student-info-modal"
 
 interface ChatbotProps {
   imageURL: string
@@ -159,8 +159,6 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
         currentChat,
       ]
     }
-
-    // console.log("conversationHistory", conversationHistory)
 
     setChats([...chats, { role: "user", content: input }])
     setIsLoading(true)
@@ -467,7 +465,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
                         {chat.role === "user" ? "You" : chatbotName}
                       </span>
                       <div className="text-primary mt-1 rounded-lg bg-zinc-200 px-4 py-1.5 font-medium">
-                        {chat.content}
+                        <MarkdownComponent content={chat.content} />
                       </div>
                     </div>
                   </div>
@@ -556,7 +554,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
               </div>
 
               <Card className="mt-4 h-[280px] overflow-y-auto rounded-xl px-3 py-2 text-sm shadow">
-                {convoRating}
+                <MarkdownComponent content={convoRating} />
               </Card>
             </CardContent>
             <CardFooter>
