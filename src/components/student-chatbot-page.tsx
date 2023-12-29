@@ -36,6 +36,7 @@ interface ChatbotProps {
   chatbotName: string
   welcomeMessage: string
   description: string
+  rubric: string
   namespace: string
   indexName: string
   tags: string
@@ -70,6 +71,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
     imageURL,
     chatbotName,
     welcomeMessage,
+    rubric,
     namespace,
     indexName,
     prompt,
@@ -297,7 +299,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ conversation: chats }),
+        body: JSON.stringify({ conversation: chats, rubric }),
       })
 
       const data = response.body
