@@ -582,7 +582,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
 
               <Card className="mt-4 h-[280px] overflow-y-auto rounded-xl px-3 py-2 text-sm shadow">
                 {ratingLoading && (
-                  <div className="flex justify-center items-center h-[260px]">
+                  <div className="flex h-[260px] items-center justify-center">
                     <DotLoader size={40} />
                   </div>
                 )}
