@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore"
 import { Loader2 } from "lucide-react"
 import { Grid } from "react-loader-spinner"
+import { DotLoader } from "react-spinners"
 import { toast } from "sonner"
 
 import { db } from "@/config/firebase"
@@ -48,6 +49,12 @@ interface Chat {
   content: string
 }
 
+interface convoRatingProps {
+  ratingAnalysis: string
+  ratingScore: string
+  ratingSummary: string
+}
+
 interface StudentChatbotPageProps {
   id: string
 }
@@ -61,7 +68,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
   const [studentRollno, setStudentRollno] = useState<string>("")
   const [studentGrade, setStudentGrade] = useState<string>("")
 
-  const [convoRating, setConvoRating] = useState<string>("")
+  const [convoRating, setConvoRating] = useState({} as convoRatingProps)
 
   const [ratingLoading, setRatingLoading] = useState<boolean>(false)
 
@@ -291,7 +298,8 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
     if (chats.length < 5) {
       toast.error("The length of the chats should be minimum 5.")
     } else {
-      setConvoRating("")
+      setConvoRating({ ratingAnalysis: "", ratingScore: "", ratingSummary: "" })
+      // setConvoRating("")
       setRatingLoading(true)
 
       const response = await fetch("/api/convo-rate", {
@@ -302,28 +310,40 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
         body: JSON.stringify({ conversation: chats, rubric }),
       })
 
-      const data = response.body
-      if (!data) {
-        console.log("No data")
-        return
-      }
+      // const data = response.body
+      // if (!data) {
+      //   console.log("No data")
+      //   return
+      // }
 
-      if (!response.ok) {
-        toast.error("Sorry, We ran into an error. Please try again.")
-        setRatingLoading(false)
-      }
+      // if (!response.ok) {
+      //   toast.error("Sorry, We ran into an error. Please try again.")
+      //   setRatingLoading(false)
+      // }
 
-      const reader = data.getReader()
-      const decoder = new TextDecoder()
-      let done = false
+      // const reader = data.getReader()
+      // const decoder = new TextDecoder()
+      // let done = false
 
-      while (!done) {
-        const { value, done: doneReading } = await reader.read()
-        done = doneReading
-        const chunkValue = decoder.decode(value)
+      // while (!done) {
+      //   const { value, done: doneReading } = await reader.read()
+      //   done = doneReading
+      //   const chunkValue = decoder.decode(value)
 
-        setConvoRating((prev) => prev + chunkValue)
-      }
+      //   setConvoRating((prev) => prev + chunkValue)
+      // }
+
+      console.log("response: ", response)
+
+      const data = await response.json()
+
+      console.log("data: ", data)
+
+      const res = JSON.parse(data)
+
+      console.log("res: ", res)
+
+      setConvoRating(res)
 
       setRatingLoading(false)
     }
@@ -341,6 +361,7 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
           studentRollno,
           studentGrade,
           convoRating,
+          chatbotId: id,
           chatbotDetails,
           chats,
           createdAt: serverTimestamp(),
@@ -348,7 +369,11 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
         setSaveLoading(false)
         toast.success("Your conversation has been saved.")
         setChats([{ role: "assistant", content: welcomeMessage }])
-        setConvoRating("")
+        setConvoRating({
+          ratingAnalysis: "",
+          ratingScore: "",
+          ratingSummary: "",
+        })
       } catch (error) {
         console.log(error)
         setSaveLoading(false)
@@ -556,7 +581,31 @@ export default function StudentChatbotPage({ id }: StudentChatbotPageProps) {
               </div>
 
               <Card className="mt-4 h-[280px] overflow-y-auto rounded-xl px-3 py-2 text-sm shadow">
-                <MarkdownComponent content={convoRating} />
+                {ratingLoading && (
+                  <div className="flex justify-center items-center h-[260px]">
+                    <DotLoader size={40} />
+                  </div>
+                )}
+
+                {convoRating.ratingAnalysis && (
+                  <>
+                    <p>
+                      <span className="font-semibold">Score: </span>
+                      {convoRating?.ratingScore}
+                    </p>
+                    <br />
+                    <p>
+                      <span className="font-semibold">Summary: </span>
+                      <br />
+                      {convoRating?.ratingSummary}
+                    </p>
+                    <br />
+
+                    <span className="font-semibold">Full Analysis: </span>
+
+                    <MarkdownComponent content={convoRating?.ratingAnalysis} />
+                  </>
+                )}
               </Card>
             </CardContent>
             <CardFooter>
